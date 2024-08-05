@@ -12,7 +12,8 @@ import org.noera.Mymq.server.MqServerImpl;
 
 public class ServerDemo {
     public static void main(String[] args) throws Exception {
-        MqServer server = new MqServerImpl();
-        server.start(9393);
+        MqServer server = new MqServerImpl()
+                .addAccess("aaa","bbb")
+                .start(9393);
     }
 }

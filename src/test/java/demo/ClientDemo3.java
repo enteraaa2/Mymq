@@ -13,7 +13,7 @@ import org.noera.Mymq.client.MqClientImpl;
 public class ClientDemo3 {
     public static void main(String[] args) throws Exception {
         //客户端
-        MqClient client=new MqClientImpl("sd:tcp://127.0.0.1:9393");
+        MqClient client=new MqClientImpl("Mymq://127.0.0.1:9393?accessKey=a&accessSecretKey=b");
 
         //订阅
         client.subscribe("demo2",((topic,message)->{

@@ -8,6 +8,7 @@ package org.noera.Mymq.server;
  **/
 
 public interface MqServer {
-    void start(int port) throws Exception;
-    void stop();
+    MqServer addAccess(String accessKey, String accessSecretKey);
+    MqServer start(int port) throws Exception;
+    MqServer stop();
 }

@@ -10,15 +10,14 @@ import org.noera.Mymq.client.MqClientImpl;
  * @create: 2024-08-03 18:36
  **/
 
-public class ClientDemo2 {
+public class ClientDemo4 {
     public static void main(String[] args) throws Exception {
         //客户端
-        MqClient client=new MqClientImpl("Mymq://127.0.0.1:9393?accessKey=aaa&accessSecretKey=bbb");
+        MqClient client=new MqClientImpl("Mymq://127.0.0.1:9393?accessKey=1&accessSecretKey=1");
 
         //订阅
-        client.subscribe("demo",((topic,message)->{
-            System.out.println("ClientDemo2::"+topic+"-"+message);
+        client.subscribe("demo2",((topic,message)->{
+            System.out.println("ClientDemo3::"+topic+"-"+message);
         }));
-
     }
 }

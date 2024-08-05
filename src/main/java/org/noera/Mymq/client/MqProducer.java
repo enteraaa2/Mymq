@@ -1,6 +1,7 @@
 package org.noera.Mymq.client;
 
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @program: Mymq
@@ -16,5 +17,6 @@ public interface MqProducer {
     * @Author: lydms
     * @Date: 2024/8/3
     */
-    void publish(String topic,String message) throws IOException;
+    //同步等待接口void性能较差--->换成响应式接口CompletableFuture
+    CompletableFuture<?> publish(String topic, String message) throws IOException;
 }

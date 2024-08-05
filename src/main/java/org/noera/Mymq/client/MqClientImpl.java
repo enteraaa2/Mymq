@@ -9,6 +9,7 @@ import org.noera.Mymq.MqConstants;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * @program: Mymq
@@ -23,8 +24,8 @@ public class MqClientImpl extends BuilderListener implements MqClient {
     private Map<String, MqConsumerHandler> subscribeMap = new HashMap<>();
 
     public MqClientImpl(String serverUrl) throws Exception {
-        this.serverUrl = serverUrl;
-        this.session = SocketD.createClient(serverUrl)
+        this.serverUrl = serverUrl.replace("Mymq://","sd:tcp://");
+        this.session = SocketD.createClient(this.serverUrl)
                 .listen(this)
                 .open();
         on(MqConstants.MQ_CMD_DISTRIBUTE,(s,m)->{
@@ -42,14 +43,20 @@ public class MqClientImpl extends BuilderListener implements MqClient {
      */
 
     @Override
-    public void subscribe(String topic, MqConsumerHandler handler) throws IOException {
+    public CompletableFuture<?> subscribe(String topic, MqConsumerHandler handler) throws IOException {
         //Qos0：消息可能不会被发送，或者发送后没有确认。
         //Qos1：消息会被发送，并且会有一个基本的确认机制，确保消息至少被发送一次。
         //Qos2：消息会被发送，并且会有更可靠的确认机制，确保消息只被发送一次，并且被正确接收。
         //支持Qos1
         subscribeMap.put(topic, handler);
         //send->要求返回，可以知道到底订阅了没有
-        session.sendAndRequest(MqConstants.MQ_CMD_SUBSCRIBE, new StringEntity("").meta(MqConstants.MQ_TOPIC, topic));
+        //session.sendAndRequest(MqConstants.MQ_CMD_SUBSCRIBE, new StringEntity("").meta(MqConstants.MQ_TOPIC, topic));
+        CompletableFuture<?> future=new CompletableFuture<>();
+        //订阅接口有回调
+        session.sendAndSubscribe(MqConstants.MQ_CMD_SUBSCRIBE, new StringEntity("").meta(MqConstants.MQ_TOPIC, topic),(r)->{
+            future.complete(null);
+        });
+        return future;
     }
 
     /**
@@ -60,12 +67,18 @@ public class MqClientImpl extends BuilderListener implements MqClient {
      * @throws IOException
      */
     @Override
-    public void publish(String topic, String message) throws IOException {
+    public CompletableFuture<?> publish(String topic, String message) throws IOException {
         //Qos0：消息可能不会被发送，或者发送后没有确认。
         //Qos1：消息会被发送，并且会有一个基本的确认机制，确保消息至少被发送一次。
         //Qos2：消息会被发送，并且会有更可靠的确认机制，确保消息只被发送一次，并且被正确接收。
         //支持Qos1
-        session.sendAndRequest(MqConstants.MQ_CMD_PUBLISH, new StringEntity(message).meta(MqConstants.MQ_TOPIC, topic));
+        //session.sendAndRequest(MqConstants.MQ_CMD_PUBLISH, new StringEntity(message).meta(MqConstants.MQ_TOPIC, topic));
+        CompletableFuture<?> future=new CompletableFuture<>();
+        //订阅接口有回调
+        session.sendAndSubscribe(MqConstants.MQ_CMD_PUBLISH, new StringEntity(message).meta(MqConstants.MQ_TOPIC, topic),(r)->{
+            future.complete(null);
+        });
+        return future;
     }
 
     /**
