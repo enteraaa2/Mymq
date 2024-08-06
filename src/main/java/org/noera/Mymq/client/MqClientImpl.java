@@ -1,6 +1,7 @@
 package org.noera.Mymq.client;
 
 import org.noear.socketd.SocketD;
+import org.noear.socketd.transport.core.Entity;
 import org.noear.socketd.transport.core.Session;
 import org.noear.socketd.transport.core.entity.StringEntity;
 import org.noear.socketd.transport.core.listener.BuilderListener;
@@ -38,22 +39,27 @@ public class MqClientImpl extends BuilderListener implements MqClient {
      * 订阅
      *
      * @param topic
-     * @param handler
+     * @param subscription
      * @throws IOException
      */
 
     @Override
-    public CompletableFuture<?> subscribe(String topic, MqConsumerHandler handler) throws IOException {
+    public CompletableFuture<?> subscribe(String topic, Subscription subscription) throws IOException {
         //Qos0：消息可能不会被发送，或者发送后没有确认。
         //Qos1：消息会被发送，并且会有一个基本的确认机制，确保消息至少被发送一次。
         //Qos2：消息会被发送，并且会有更可靠的确认机制，确保消息只被发送一次，并且被正确接收。
         //支持Qos1
-        subscribeMap.put(topic, handler);
+        subscribeMap.put(topic, subscription.getHandler());
+
+        Entity entity=new StringEntity("")
+                .meta(MqConstants.MQ_TOPIC, topic)
+                .meta(MqConstants.MQ_IDENTITY, subscription.getIdentity());
+
         //send->要求返回，可以知道到底订阅了没有
         //session.sendAndRequest(MqConstants.MQ_CMD_SUBSCRIBE, new StringEntity("").meta(MqConstants.MQ_TOPIC, topic));
         CompletableFuture<?> future=new CompletableFuture<>();
         //订阅接口有回调
-        session.sendAndSubscribe(MqConstants.MQ_CMD_SUBSCRIBE, new StringEntity("").meta(MqConstants.MQ_TOPIC, topic),(r)->{
+        session.sendAndSubscribe(MqConstants.MQ_CMD_SUBSCRIBE, entity,(r)->{
             future.complete(null);
         });
         return future;

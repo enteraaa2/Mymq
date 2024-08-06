@@ -2,6 +2,7 @@ package demo;
 
 import org.noera.Mymq.client.MqClient;
 import org.noera.Mymq.client.MqClientImpl;
+import org.noera.Mymq.client.Subscription;
 
 /**
  * @program: Mymq
@@ -17,16 +18,17 @@ public class ClientDemo1 {
         MqClient client=new MqClientImpl("Mymq://127.0.0.1:9393?accessKey=aaa&accessSecretKey=bbb");
 
         //订阅
-        client.subscribe("demo",((topic,message)->{
+        client.subscribe("demo",new Subscription("a",((topic,message)->{
             System.out.println("ClientDemo1::"+topic+"-"+message);
-        }));
+        })));
 
         //发布
         client.publish("demo","hi");
 
         for (int i = 0; i < 10; i++) {
             Thread.sleep(100);
-            client.publish("demo","hi");
+            client.publish("demo","hi"+i);
+            client.publish("demo2","hi"+i);
         }
     }
 }

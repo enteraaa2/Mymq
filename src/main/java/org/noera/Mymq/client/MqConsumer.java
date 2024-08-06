@@ -12,12 +12,13 @@ import java.util.concurrent.CompletableFuture;
 public interface MqConsumer {
     /**
      * @Description:订阅
-     * @Param: [topic, handler]主题，消费处理
+     * @Param: [topic, subscription]主题，订阅
      * @return: [java.lang.String, org.noera.Mymq.client.ConsumerHandler]
      * @Author: lydms
      * @Date: 2024/8/3
      */
     //同步等待接口void性能较差--->换成响应式接口CompletableFuture
-    CompletableFuture<?> subscribe(String topic, MqConsumerHandler handler) throws IOException;
+    //subscription-->订阅者（身份+消息处理器）
+    CompletableFuture<?> subscribe(String topic, Subscription  subscription) throws IOException;
 
 }
