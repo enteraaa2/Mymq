@@ -14,7 +14,8 @@ import org.noera.Mymq.client.Subscription;
 public class ClientDemo2 {
     public static void main(String[] args) throws Exception {
         //客户端
-        MqClient client=new MqClientImpl("Mymq://127.0.0.1:9393?accessKey=aaa&accessSecretKey=bbb");
+        MqClient client=new MqClientImpl("Mymq://127.0.0.1:9393?accessKey=aaa&accessSecretKey=bbb")
+                .autoAck(true);;
 
         //订阅
         client.subscribe("demo",new Subscription("b",((topic, message)->{

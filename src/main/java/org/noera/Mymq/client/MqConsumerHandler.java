@@ -1,4 +1,7 @@
 package org.noera.Mymq.client;
+
+import java.io.IOException;
+
 /**
  * @program: Mymq
  * @description: 消费者处理器
@@ -11,5 +14,5 @@ public interface MqConsumerHandler {
      * @param topic
      * @param message
      */
-    void handle(String topic,String message);
+    void handle(String topic,MqMessage message)throws IOException;
 }
