@@ -10,7 +10,6 @@ import org.noera.Mymq.MqConstants;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @program: Mymq
@@ -24,7 +23,10 @@ public class MqServerImpl extends BuilderListener implements MqServer {
     //保存session集合
     private Set<Session> sessionSet = new HashSet<>();
     //主题与身份集合
+    //第一次发给会话，第二次发给身份标识的会话，第三次是发给队列
     private Map<String, Set<String>> subscribeMap = new HashMap<>();
+    //身份与队列的映射
+    private Map<String, MqMessageQueue> identityMap = new HashMap<>();
     //身份校验集合
     private Map<String, String> accessMap = new HashMap<>();
 
@@ -110,14 +112,18 @@ public class MqServerImpl extends BuilderListener implements MqServer {
         //给会话添加身份（可以处理多个不同的身份）
         session.attr(identity, "1");
         //首先先得往当前session中加入身份identity，将当前会话与身份关联起来
-        //以身份进行订阅，这里有可能有多个身份
-        Set<String> identitys = subscribeMap.get(topic);
-        if (identitys == null) {
-            identitys = new LinkedHashSet<>();
-            subscribeMap.put(topic, identitys);
+        //以身份进行订阅，这里有可能有多个身份（topic---》identity）
+        Set<String> identitySet = subscribeMap.get(topic);
+        if (identitySet == null) {
+            identitySet = new LinkedHashSet<>();
+            subscribeMap.put(topic, identitySet);
         }
         //往当前主题下去添加当前身份例如在demo主题下的身份a和身份b
-        identitys.add(identity);
+        identitySet.add(identity);
+        //为身份建立队列（identity---》queue）
+        if (!identityMap.containsKey(identity)) {
+            identityMap.put(identity, new MqMessageQueueImpl(identity, sessionSet));
+        }
     }
 
     /**
@@ -129,29 +135,16 @@ public class MqServerImpl extends BuilderListener implements MqServer {
      */
     private void onPublish(String topic, Message message) throws IOException {
         //获取当前主题下的说有身份
-        Set<String> identitys = subscribeMap.get(topic);
-        if (identitys != null) {
-            for (String identity : identitys) {
-                //找到此身份的其中一个会话（如果是ip就一个，如果是集群就任选一个）
-                //使用parallelStream做并发处理
-                List<Session> sessions = sessionSet.parallelStream()
-                        .filter(s -> s.attrMap().containsKey(identity))
-                        .collect(Collectors.toList());
-                if (sessions.size() > 0) {
-                    //随机取一个会话
-                    int idx = 0;
-                    if (sessions.size() > 1) {
-                        idx = new Random().nextInt(sessions.size());
-                    }
-                    Session s1 = sessions.get(idx);
+        Set<String> identitysSet = subscribeMap.get(topic);
+        if (identitysSet != null) {
+            MqMessageHolder mqMessageHolder = new MqMessageHolder(message);
 
-                    //给会话发送消息
-                    s1.send(MqConstants.MQ_CMD_DISTRIBUTE, message);
-                    message.data().reset();
+            for (String identity : identitysSet) {
+                MqMessageQueue queue = identityMap.get(identity);
+                if (queue != null) {
+                    queue.add(mqMessageHolder);
                 }
             }
         }
     }
-
-
 }
