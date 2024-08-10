@@ -24,8 +24,6 @@ public class ClientDemo1 {
         })));
 
         //发布
-        client.publish("demo","hi");
-
         for (int i = 0; i < 10; i++) {
             Thread.sleep(100);
             client.publish("demo","hi"+i);

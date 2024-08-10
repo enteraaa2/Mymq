@@ -137,9 +137,10 @@ public class MqServerImpl extends BuilderListener implements MqServer {
         //获取当前主题下的说有身份
         Set<String> identitysSet = subscribeMap.get(topic);
         if (identitysSet != null) {
-            MqMessageHolder mqMessageHolder = new MqMessageHolder(message);
-
             for (String identity : identitysSet) {
+                //将 MqMessageHolder 的实例化放在循环内可以确
+                //保每个订阅者都有独立的消息持有者，避免共享状态
+                MqMessageHolder mqMessageHolder = new MqMessageHolder(message);
                 MqMessageQueue queue = identityMap.get(identity);
                 if (queue != null) {
                     queue.add(mqMessageHolder);

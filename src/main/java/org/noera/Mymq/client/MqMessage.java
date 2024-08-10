@@ -9,11 +9,11 @@ import java.io.IOException;
  * @create: 2024-08-08 21:28
  **/
 public interface MqMessage {
-    /**
-     * 消息键
-     * @return
-     */
-    String getKey();
+//    /**
+//     * 消息键
+//     * @return
+//     */
+//    String getKey();
     /**
      * 消息内容
      * @return

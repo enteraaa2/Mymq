@@ -130,7 +130,7 @@ public class MqClientImpl extends BuilderListener implements MqClientInternal {
     @Override
     public void acknowledge(Message message,boolean isOk)throws IOException {
         //内部手动ack重写，手动确认消息的接收状态。根据处理结果，向服务器发送确认或拒绝信号
-        session.replyEnd(message,new StringEntity("").meta(MqConstants.MQ_ACK,isOk?"0":"1"));
+        session.replyEnd(message,new StringEntity("").meta(MqConstants.MQ_ACK,isOk?"1":"0"));
     }
 
     /**
